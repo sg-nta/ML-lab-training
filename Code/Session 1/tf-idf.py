@@ -101,5 +101,5 @@ def get_tf_idf(data_path):
         f.write('\n'.join(data_tf_idf))
 if __name__ == "__main__":
     #gather_20newsgroups_data()
-    generate_vocabulary(f'{PATH}/20news-train-processed.txt')
-    get_tf_idf(f'{PATH}/20news-train-processed.txt')
+    generate_vocabulary(f'{PATH}/20news-full-processed.txt')
+    #get_tf_idf(f'{PATH}/20news-train-processed.txt')
