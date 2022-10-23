@@ -150,6 +150,6 @@ class Kmeans:
 if __name__ == '__main__':
     kmeans = Kmeans(num_clusters=20)
     kmeans.load_data('../datasets/20news-bydate/20news-full-tf-idf.txt')
-    kmeans.run(seed_value=1, criterion='similarity', threshold=1e-4)
+    kmeans.run(seed_value=1, criterion='similarity', threshold=0.01)
     print(kmeans.compute_purity())
     print(kmeans.compute_NMI())
