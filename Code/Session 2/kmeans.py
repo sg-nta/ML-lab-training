@@ -14,7 +14,7 @@ class Cluster:
         self._members = []
     
     def reset_members(self):
-        self.members = []
+        self._members = []
     
     def add_member(self, member):
         self._members.append(member)
@@ -115,26 +115,27 @@ class Kmeans:
             self._iteration += 1
             print("Iteration", self._iteration, ", Overall similarity: ", self._S)
             if self.stopping_condition(criterion, threshold):
+                print(f"Stop after: {self._iteration} iterations")
                 break
                 
                 
     def compute_purity(self):
         majority_sum = 0
         for cluster in self._clusters:
-            member_labels = [member._label for member in cluster.members]
+            member_labels = [member._label for member in cluster._members]
             max_count = max([member_labels.count(label) for label in range(20)])
             majority_sum += max_count
         return majority_sum / len(self._data)
     
     def compute_NMI(self):
-        I_value, H_omega, H_c, N = 0, 0, 0, len(self._data)
+        I_value, H_omega, H_c, N = 0, 0, 9, len(self._data)
         for cluster in self._clusters:
             member_labels = [member._label for member in cluster._members]
             for label in set(member_labels):
                 wk_cj = member_labels.count(label)
                 wk = len(cluster._members)
                 cj = self._label_count[label]
-                I_value += (wk_cj / N) * np.log10(N * wk_cj / (wk * cj))
+                I_value += (wk_cj / N) * np.log10(N * wk_cj / (wk * cj) + 1e-12)
         
         for cluster in self._clusters:
             wk = len(cluster._members)
@@ -150,6 +151,6 @@ class Kmeans:
 if __name__ == '__main__':
     kmeans = Kmeans(num_clusters=20)
     kmeans.load_data('../datasets/20news-bydate/20news-full-tf-idf.txt')
-    kmeans.run(seed_value=1, criterion='similarity', threshold=0.01)
-    print(kmeans.compute_purity())
-    print(kmeans.compute_NMI())
+    kmeans.run(seed_value=1, criterion='similarity', threshold=1e-3)
+    print(f'Purity: {kmeans.compute_purity()}')
+    print(f'NMI: {kmeans.compute_NMI()}')

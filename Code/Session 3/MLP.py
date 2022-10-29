@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+from load_and_save import load_datasets, save_parameters, restore_parameters
 class MLP:
     def __init__(self, input_size, hidden_size, output_size):
         self._output_size = output_size
@@ -67,87 +68,6 @@ class MLP:
     def reset_parameters(self):
         self.build_graph()
     
-class DataReader:
-    def __init__ (self, data_path, batch_size, vocab_size):
-        self._batch_size = batch_size
-        self._batch_id = 0
-        self._num_epoch = 0
-        with open(data_path) as f:
-            d_lines = f.read().splitlines()
-        
-        self._data = np.empty((len(d_lines), vocab_size))
-        self._labels = np.empty(len(d_lines))
-        for data_id, line in enumerate(d_lines):
-            r_d = np.zeros(vocab_size)
-            features = line.split("<fff>")
-            label, doc_id = int(features[0]), int(features[1])
-            tokens = features[2].split()
-            for token in tokens:
-                index, value = int(token.split(":")[0]), float(token.split(":")[1])
-                r_d[index] = value
-            self._data[data_id] = r_d
-            self._labels[data_id] = label
-    
-    def next_batch(self):
-        start = self._batch_id * self._batch_size
-        end = start + self._batch_size
-        self._batch_id += 1
-        
-        if end + self._batch_size  > self._data.shape[0]:
-            end = self._data.shape[0]
-            self._num_epoch += 1
-            self._batch_id = 0
-            indices = np.arange(self._data.shape[0])
-            np.random.seed(2022)
-            np.random.shuffle(indices)
-            self._data, self._labels = self._data[indices], self._labels[indices]
-            
-        return self._data[start:end], self._labels[start:end]
-    def reset(self):
-        self._batch_id = 0
-        self._num_epoch = 0
-
-def load_datasets():
-    with open("../datasets/20news-bydate/words_idfs.txt") as f:
-        vocab_size = len(f.read().splitlines())
-        
-    train_data_reader = DataReader(
-        data_path='../datasets/20news-bydate/20news-train-tf-idf.txt',
-        batch_size=50,
-        vocab_size = vocab_size
-    )
-
-    test_data_reader = DataReader(
-        data_path='../datasets/20news-bydate/20news-test-tf-idf.txt',
-        batch_size=50,
-        vocab_size = vocab_size
-    )
-
-    return train_data_reader, test_data_reader
-
-def save_parameters(name, value, epoch):
-    filename = name.replace(':', '-colon-') + f'-epoch-{epoch}.txt'
-    if len(value.shape) == 1:
-        string_form = ','.join([str(number) for number in value])
-    else:
-        string_form = '\n'.join([','.join([str(number)
-                                            for number in value[row]])
-                                            for row in range(value.shape[0])])
-        
-    with open(f'../datasets/20news-bydate/saved-params/{filename}', 'w') as f:
-        f.write(string_form)
-
-def restore_parameters(name, epoch):
-    filename = name.replace(':', '-colon-') + f'-epoch-{epoch}.txt'
-    with open(f'../datasets/20news-bydate/saved-params/{filename}') as f:
-        lines = f.read().splitlines()
-    if len(lines) == 1:
-        value = [[float(number) for number in lines[0].split(',')]]
-    else:
-        value = [[float(number) for number in lines[row].split(',')]
-                for row in range(len(lines))]
-    return value
-
 
 if __name__ == "__main__":
     
